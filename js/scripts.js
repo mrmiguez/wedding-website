@@ -117,10 +117,14 @@ $(document).ready(function () {
         });
     });
     /***************** Smooth Scrolling ******************/
-
+    /*
     $(function () {
 
-        $('a[href*=#]:not([href=#])').click(function () {
+        $('a[href*=#]')
+              // Remove links that don't actually link to anything
+            .not('[href="#"]')
+            .not('[href="#0"]')
+            .click(function () {
             if (location.pathname.replace(/^\//, '') === this.pathname.replace(/^\//, '') && location.hostname === this.hostname) {
 
                 var target = $(this.hash);
@@ -134,7 +138,49 @@ $(document).ready(function () {
             }
         });
 
-    });
+    });*/
+    
+    // Select all links with hashes
+    $('a[href*="#"]')
+      // Remove links that don't actually link to anything
+      .not('[href="#"]')
+      .not('[href="#0"]')
+      .not('[class="no-offset"]')
+      .click(function(event) {
+        // On-page links
+        if (
+          location.pathname.replace(/^\//, '') == this.pathname.replace(/^\//, '') 
+          && 
+          location.hostname == this.hostname
+        ) {
+          // Figure out element to scroll to
+          var target = $(this.hash);
+          target = target.length ? target : $('[name=' + this.hash.slice(1) + ']');
+          // Does a scroll target exist?
+          if (target.length) {
+            // Only prevent default if animation is actually gonna happen
+            event.preventDefault();
+            //$('div[class="panel-body"]').animate({scrollTop}, 2000);
+            $('html, body')
+              .animate({
+              scrollTop: target.offset().top - 90
+            }, 2000);
+            /*, function() {
+              // Callback after animation
+              // Must change focus!
+              
+              var $target = $(target);
+              $target.focus();
+              if ($target.is(":focus")) { // Checking if the target was focused
+                return false;
+              } else {
+                $target.attr('tabindex','-1'); // Adding tabindex for elements not focusable
+                $target.focus(); // Set focus again
+              };
+            });*/
+          }
+        }
+      });
 
     /********************** Social Share buttons ***********************/
     var share_bar = document.getElementsByClassName('share-bar');
@@ -161,9 +207,6 @@ $(document).ready(function () {
         share_bar[i].style.display = 'inline-block';
     }
 
-    /********************** Embed youtube video *********************/
-    $('.player').YTPlayer();
-
 
     /********************** Toggle Map Content **********************/
     $('#btn-show-map').click(function () {
@@ -175,94 +218,9 @@ $(document).ready(function () {
         $('#btn-show-content').toggleClass('toggle-map-content');
     });
 
-    /********************** Add to Calendar **********************/
-    var myCalendar = createCalendar({
-        options: {
-            class: '',
-            // You can pass an ID. If you don't, one will be generated for you
-            id: ''
-        },
-        data: {
-            // Event title
-            title: "Ram and Antara's Wedding",
-
-            // Event start date
-            start: new Date('Nov 27, 2017 10:00'),
-
-            // Event duration (IN MINUTES)
-            // duration: 120,
-
-            // You can also choose to set an end time
-            // If an end time is set, this will take precedence over duration
-            end: new Date('Nov 29, 2017 00:00'),
-
-            // Event Address
-            address: 'ITC Fortune Park Hotel, Kolkata',
-
-            // Event Description
-            description: "We can't wait to see you on our big day. For any queries or issues contact Mr. Amit Roy at +91 9435021804 or +91 7086018971."
-        }
-    });
-
-    $('#add-to-cal').html(myCalendar);
-
-
-    /********************** RSVP **********************/
-    $('#rsvp-form').on('submit', function (e) {
-        e.preventDefault();
-        var data = $(this).serialize();
-
-        $('#alert-wrapper').html(alert_markup('info', '<strong>Just a sec!</strong> We are saving your details.'));
-
-        if (MD5($('#invite_code').val()) !== 'b0e53b10c1f55ede516b240036b88f40'
-            && MD5($('#invite_code').val()) !== '2ac7f43695eb0479d5846bb38eec59cc') {
-            $('#alert-wrapper').html(alert_markup('danger', '<strong>Sorry!</strong> Your invite code is incorrect.'));
-        } else {
-            $.post('https://script.google.com/macros/s/AKfycbzUqz44wOat0DiGjRV1gUnRf4HRqlRARWggjvHKWvqniP7eVDG-/exec', data)
-                .done(function (data) {
-                    console.log(data);
-                    $('#alert-wrapper').html('');
-                    $('#rsvp-modal').modal('show');
-                })
-                .fail(function (data) {
-                    console.log(data);
-                    $('#alert-wrapper').html(alert_markup('danger', '<strong>Sorry!</strong> There is some issue with the server. '));
-                });
-        }
-    });
-
 });
 
 /********************** Extras **********************/
-
-// Google map
-function initMap() {
-    var itc_kol = {lat: 22.5932759, lng: 88.27027720000001};
-    var map = new google.maps.Map(document.getElementById('map-canvas'), {
-        zoom: 15,
-        center: itc_kol,
-        scrollwheel: false
-    });
-
-    var marker = new google.maps.Marker({
-        position: itc_kol,
-        map: map
-    });
-}
-
-function initBBSRMap() {
-    var la_fiesta = {lat: 20.305826, lng: 85.85480189999998};
-    var map = new google.maps.Map(document.getElementById('map-canvas'), {
-        zoom: 15,
-        center: la_fiesta,
-        scrollwheel: false
-    });
-
-    var marker = new google.maps.Marker({
-        position: la_fiesta,
-        map: map
-    });
-}
 
 // alert_markup
 function alert_markup(alert_type, msg) {
